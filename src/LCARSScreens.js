@@ -20,6 +20,11 @@ class LCARSScreen {
         document.body.style.MozUserSelect='none';
         document.body.style.WebkitUserSelect='none';
         
+        this.LEFT = 10;
+        this.TOP = 5;
+        this.RIGHT  = 10;
+        this.BOTTOM = 15;
+        
         this.element = document.createElementNS(LCARS.svgNS, "svg");
         
         this.element.setAttribute("id", this.id);
@@ -141,18 +146,12 @@ class LCARSScreen {
 
 
 /**
- * Blank Screen - No header or footer
+ * Blank Screen - No header or footer or title
  */
 export class LCARSBlankScreen extends LCARSScreen {
     
     constructor(id, title, width, height, properties) {
         super(id, title, width, height, properties);
-        
-        this.LEFT = 10;
-        this.TOP = 5;
-        this.RIGHT  = 10;
-        this.BOTTOM = 15;
-        
         
         this.drawScreen();
         
@@ -170,12 +169,6 @@ export class LCARSBasicScreen extends LCARSScreen {
     constructor(id, title, width, height, properties) {
         super(id, title, width, height, properties);
         
-        this.LEFT = 10;
-        this.TOP = 5;
-        this.RIGHT  = 10;
-        this.BOTTOM = 15;
-        
-        
         this.drawScreen();
         
         this.drawHeader();
@@ -184,3 +177,99 @@ export class LCARSBasicScreen extends LCARSScreen {
     }
     
 }
+
+
+const HTTP_STATUS_CODES = {
+    '200' : 'OK',
+    '201' : 'Created',
+    '202' : 'Accepted',
+    '203' : 'Non-Authoritative Information',
+    '204' : 'No Content',
+    '205' : 'Reset Content',
+    '206' : 'Partial Content',
+    '300' : 'Multiple Choices',
+    '301' : 'Moved Permanently',
+    '302' : 'Found',
+    '303' : 'See Other',
+    '304' : 'Not Modified',
+    '305' : 'Use Proxy',
+    '307' : 'Temporary Redirect',
+    '400' : 'Bad Request',
+    '401' : 'Unauthorized',
+    '402' : 'Payment Required',
+    '403' : 'Forbidden',
+    '404' : 'Not Found',
+    '405' : 'Method Not Allowed',
+    '406' : 'Not Acceptable',
+    '407' : 'Proxy Authentication Required',
+    '408' : 'Request Timeout',
+    '409' : 'Conflict',
+    '410' : 'Gone',
+    '411' : 'Length Required',
+    '412' : 'Precondition Failed',
+    '413' : 'Request Entity Too Large',
+    '414' : 'Request-URI Too Long',
+    '415' : 'Unsupported Media Type',
+    '416' : 'Requested Range Not Satisfiable',
+    '417' : 'Expectation Failed',
+    '500' : 'Internal Server Error',
+    '501' : 'Not Implemented',
+    '502' : 'Bad Gateway',
+    '503' : 'Service Unavailable',
+    '504' : 'Gateway Timeout',
+    '505' : 'HTTP Version Not Supported'
+};
+
+/**
+ * HTTP Status Screen - Includes a header, including the HTTP status as the screen title, and a footer.
+ */
+export class HTTPStatusScreen extends LCARSScreen {
+    
+    constructor(id, width, height, properties, statusCode, statusDetailMessage) {
+        super(id, statusCode + " - " + HTTP_STATUS_CODES[statusCode].toUpperCase(), width, height, properties);
+        
+        this.statusCode = statusCode;
+        this.statusDetailMessage = statusDetailMessage;
+        this.statusMessage = "Unknown";
+
+        if(statusCode >= 200 && statusCode < 300) {
+            this.statusMessage = "Success";
+        }
+        else if(statusCode >= 300 && statusCode < 400) {
+            this.statusMessage = "Redirection";
+        }
+        else if(statusCode >= 400 && statusCode < 500) {
+            this.statusMessage = "Access Denied";
+        }
+        else if(statusCode >= 500 && statusCode < 600) {
+            this.statusMessage = "Server Error";
+        }
+
+        
+        this.drawHeader();
+        
+        this.drawFooter();
+
+        this.drawScreen();
+        
+    }
+    
+    drawScreen() {
+        
+        let startx = this.width*0.12;
+        let starty = this.height*0.25;
+        let indentx = startx + 100;
+        
+        this.text_message = new LCARSText(this.id + "_text_message", this.statusMessage.toUpperCase(), startx, starty , LCARS.EF_TITLE | LCARS.EC_RED);
+        this.text_message.setTextFontSize(110);
+        this.addComponent(this.text_message);
+        
+        this.text_message_sub_1 = new LCARSText(this.id + "_text_message_sub_1", this.statusDetailMessage.toUpperCase(), indentx, starty+100 , LCARS.EF_SUBTITLE | LCARS.EC_RED);
+        this.addComponent(this.text_message_sub_1);
+        
+        this.text_message_sub_2 = new LCARSText(this.id + "_text_message_sub_2", "STATUS: " + this.title, indentx, starty+150 , LCARS.EF_SUBTITLE | LCARS.EC_RED);
+        this.addComponent(this.text_message_sub_2);
+        
+    }
+}
+

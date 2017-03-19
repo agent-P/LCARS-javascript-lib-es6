@@ -28,6 +28,7 @@ export class LCARSComponent {
         
         this.shapeElement = document.createElementNS(LCARS.svgNS, "path");
         this.textElement = document.createElementNS(LCARS.svgNS, "text");
+        this.iconElement = document.createElementNS(LCARS.svgNS, "path");
         
         /** Create the DOM object for shape animation, and set its attributes. */
         this.animateElement = document.createElementNS(LCARS.svgNS, "animate");
@@ -372,6 +373,7 @@ export class LCARSComponent {
             this.shapeElement.setAttribute("fill-opacity", '1.0');
             this.shapeElement.setAttribute("stroke-width", '0');
             this.textElement.setAttribute("fill", this.textColor);
+            this.iconElement.setAttribute("fill", this.textColor);
         }
         else {
             this.element.setAttribute("pointer-events", "none");
@@ -379,6 +381,7 @@ export class LCARSComponent {
             this.shapeElement.setAttribute("stroke-width", '2');
             this.shapeElement.setAttribute("fill-opacity", '0.1');
             this.textElement.setAttribute("fill", '#585858');
+            this.iconElement.setAttribute("fill", '#585858');
         }
     }
     
@@ -437,24 +440,66 @@ export class LCARSComponent {
      * Method to blink a visible LCARS component "off" (make invisible) for 0.1 seconds.
      * Used for things like activity indicators.
      */
-    offBlink() {
+    offBlink(_duration) {
+        var duration = _duration;
+        if(duration == undefined) {
+            duration = 100;
+        }
+        
         var thisObject = this;
         thisObject.setVisible(false);
-        setTimeout(function() { thisObject.setVisible(true) }, 10);
+        setTimeout(function() { thisObject.setVisible(true) }, duration);
     }
     
- 
+    
     /**
      * Method to blink an invisible LCARS component "on" (make visible) for 0.1 seconds.
      * Used for things like activity indicators.
      */
-    onBlink() {
+    onBlink(_duration) {
+        var duration = _duration;
+        if(duration == undefined) {
+            duration = 100;
+        }
+        
         var thisObject = this;
         thisObject.setVisible(true);
-        setTimeout(function() { thisObject.setVisible(false) }, 10);
+        setTimeout(function() { thisObject.setVisible(false) }, duration);
     }
     
-
+    
+    /**
+     * Method to blink an enabled LCARS component "off" (make disabled) for 0.1 seconds.
+     * Used for things like activity indicators.
+     */
+    offBlinkOutline(_duration) {
+        var duration = _duration;
+        if(duration == undefined) {
+            duration = 100;
+        }
+        
+        var thisObject = this;
+        thisObject.setEnabled(false);
+        setTimeout(function() { thisObject.setEnabled(true) }, duration);
+    }
+    
+    
+    /**
+     * Method to blink a disabled LCARS component "on" (make enabled) for 0.1 seconds.
+     * Used for things like activity indicators.
+     */
+    onBlinkOutline(_duration) {
+        var duration = _duration;
+        if(duration == undefined) {
+            duration = 100;
+        }
+        
+        var thisObject = this;
+        thisObject.setEnabled(true);
+        setTimeout(function() { thisObject.setEnabled(false) }, duration);
+    }
+    
+    
     /**
      * Method to draw the text of the LCARS component, if any. The text element is created
      * in the constructor. This method simply sets the text attributes, and the
@@ -541,11 +586,16 @@ export class LCARSComponent {
 
     setIcon(svgString) {
         this.iconScale = " scale(1.5) ";
-        this.iconElement = document.createElementNS(LCARS.svgNS, "path");
         
         this.iconElement.setAttribute("d", svgString);
-        this.iconElement.setAttribute("transform", "scale(1.75)");
-        this.iconElement.setAttribute("fill", this.getTextColor());
+        this.iconElement.setAttribute("transform", this.iconScale);
+        //this.iconElement.setAttribute("fill", this.getTextColor());
+        if(this.properties & LCARS.ES_DISABLED) {
+            this.iconElement.setAttribute("fill", '#585858');
+        }
+        else {
+            this.iconElement.setAttribute("fill", this.textColor);
+        }
         
         this.element.appendChild(this.iconElement);
     }
@@ -760,12 +810,71 @@ export class LCARSRectangle extends LCARSComponent {
 
 
 /**
- * LCARS Icon
+ * LCARS Indicator component
+ */
+export class LCARSIndicator extends LCARSComponent {
+    constructor(name, label, x, y, width, height, properties) {
+        super(name, label, x, y, properties | LCARS.ES_STATIC);  // Indicators are always static.
+        this.width = width;
+        this.height = height;
+        
+        this.drawShape();
+        this.drawText();
+        
+        this.off();  // start in the off state
+    }
+    
+    on() {
+        this.setBlinking(false);
+        this.setEnabled(true);
+    }
+    
+    off() {
+        this.setBlinking(false);
+        this.setEnabled(false);
+    }
+    
+    onBlink(_duration) {
+        var duration = _duration;
+        if(duration == undefined) {
+            duration = 100;
+        }
+        this.onBlinkOutline(duration);
+    }
+    
+    offBlink(_duration) {
+        var duration = _duration;
+        if(duration == undefined) {
+            duration = 100;
+        }
+        this.offBlinkOutline(duration);
+    }
+    
+    warning(color) {
+        if(color == null || color == undefined) {
+            color = LCARS.EC_YELLOW;
+        }
+        this.on();
+        this.setBlinking(true, color, LCARS.BLINK_DURATION_WARNING);
+    }
+    
+    error(color) {
+        if(color == null || color == undefined) {
+            color = LCARS.EC_RED;
+        }
+        this.on();
+        this.setBlinking(true, color, LCARS.BLINK_DURATION_ERROR);
+    }
+}
+
+
+/**
+ * LCARS Icon component
  */
 export class LCARSIcon extends LCARSComponent {
     
     constructor(name, label, x, y, properties, svgString) {
-        super(name, label, x, y, properties);
+        super(name, label, x, y, properties | LCARS.ES_STATIC);
         
         this.svgString = svgString;
         
@@ -781,6 +890,31 @@ export class LCARSIcon extends LCARSComponent {
         this.element.appendChild(this.shapeElement);
     }
     
+    setShapeAttributes () {
+        this.shapeElement.setAttribute("id", this.id + LCARS.SHAPE_SUFFIX);
+        this.shapeElement.setAttribute("fill", this.color);
+        if(this.properties & LCARS.ES_DISABLED) {
+            this.shapeElement.setAttribute("fill-opacity", '0.4');
+        }
+        else {
+            this.shapeElement.setAttribute("fill-opacity", '1.0');
+        }
+    }
+    
+    
+    setEnabled(enable) {
+        if(enable) {
+            this.shapeElement.setAttribute("fill-opacity", '1.0');
+        }
+        else {
+            this.shapeElement.setAttribute("fill-opacity", '0.4');
+        }
+    }
+
+    scale(scaleFactor) {
+        this.shapeElement.setAttribute("transform", "scale(" + scaleFactor + ")");
+    }
+
 }
 
 
