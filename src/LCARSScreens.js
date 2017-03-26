@@ -1,5 +1,6 @@
 import { LCARS } from './LCARS';
-import { LCARSCorner, LCARSText, LCARSRectangle, LCARSButton, LCARSTextArea, LCARSKeypad, LCARSClock, LCARSCalendar, LCARSIcon } from './LCARSComponents';
+import { LCARSText } from './LCARSText';
+import { LCARSRectangle } from './LCARSRectangle';
 
 class LCARSScreen {
     
@@ -139,26 +140,12 @@ class LCARSScreen {
     addComponent(component) {
         this.element.appendChild(component.element);
     }
-  
-}
-
-
-
-
-/**
- * Blank Screen - No header or footer or title
- */
-export class LCARSBlankScreen extends LCARSScreen {
     
-    constructor(id, title, width, height, properties) {
-        super(id, title, width, height, properties);
-        
-        this.drawScreen();
-        
+    removeComponent(component) {
+        this.element.appendChild(component.element);
     }
     
 }
-
 
 
 /**
@@ -174,6 +161,21 @@ export class LCARSBasicScreen extends LCARSScreen {
         this.drawHeader();
         
         this.drawFooter();
+    }
+    
+}
+
+
+/**
+ * Blank Screen - No header or footer or title
+ */
+export class LCARSBlankScreen extends LCARSScreen {
+    
+    constructor(id, title, width, height, properties) {
+        super(id, title, width, height, properties);
+        
+        this.drawScreen();
+        
     }
     
 }
@@ -231,7 +233,7 @@ export class HTTPStatusScreen extends LCARSScreen {
         this.statusCode = statusCode;
         this.statusDetailMessage = statusDetailMessage;
         this.statusMessage = "Unknown";
-
+        
         if(statusCode >= 200 && statusCode < 300) {
             this.statusMessage = "Success";
         }
@@ -244,12 +246,12 @@ export class HTTPStatusScreen extends LCARSScreen {
         else if(statusCode >= 500 && statusCode < 600) {
             this.statusMessage = "Server Error";
         }
-
+        
         
         this.drawHeader();
         
         this.drawFooter();
-
+        
         this.drawScreen();
         
     }

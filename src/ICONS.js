@@ -76,6 +76,7 @@ export class ICONS {
     static get BATTERY_FULL() { return BATTERY_FULL; }
     static get BATTERY_EMPTY() { return BATTERY_EMPTY; }
     static get BATTERY_ON_AC() { return BATTERY_ON_AC; }
+    static get BATTERY_ON_AC_NEGATIVE() { return BATTERY_ON_AC_NEGATIVE; }    
     static get WEATHER_PARTLY_CLOUDY_DAY() { return WEATHER_PARTLY_CLOUDY_DAY; }
     static get WEATHER_CLEAR_DAY() { return WEATHER_CLEAR_DAY; }
     static get WEATHER_CLEAR_NIGHT() { return WEATHER_CLEAR_NIGHT; }
